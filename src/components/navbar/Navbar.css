@@ -10,9 +10,13 @@ nav {
   right: 0;
   left: 0;
   transition: 0.1s ease-in-out;
+  padding: .2rem;
 }
 nav .logo {
   margin-left: 3rem;
+  width: 100px;
+  height: 70px;
+
 }
 nav .logo a {
   text-decoration: none;
@@ -42,11 +46,11 @@ nav .logo a {
     color: var(--primary);
   }
 }
-.navmenu li{
-  transition:0.2s ease-in-out;
+.navmenu li {
+  transition: 0.2s ease-in-out;
 }
-.navmenu li:hover{
-      transform: scale(1.1);
+.navmenu li:hover {
+  transform: scale(1.1);
 }
 .navbuttons {
   display: flex;

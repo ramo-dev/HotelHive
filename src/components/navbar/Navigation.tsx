@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { navItems } from "./NavItems";
 import { useEffect, useState } from "react";
+import logo from "../../assets/Logo.png";
 import "./Navbar.css";
 const Navbar = () => {
   const [navbarBackground, setNavbarBackground] = useState("transparent");
-  const [textColor, setTextColor] = useState('white')
+  const [textColor, setTextColor] = useState("white");
+  const [inverse, setInverse] = useState("invert(0)")
 
   useEffect(() => {
     const handleScroll = () => {
@@ -12,10 +14,12 @@ const Navbar = () => {
 
       if (scrollPosition > 100) {
         setNavbarBackground("white");
-        setTextColor('black')
+        setTextColor("black");
+        setInverse("invert(1)")
       } else {
-        setNavbarBackground("transparent"); 
-        setTextColor('white')
+        setNavbarBackground("transparent");
+        setTextColor("white");
+        setInverse("invert(0)");
       }
     };
     window.addEventListener("scroll", handleScroll);
@@ -32,9 +36,9 @@ const Navbar = () => {
           color: "var(--textWhite)",
         }}
       >
-        <div className="logo">
+        <div >
           <Link to="/">
-            <h1 style={{ color: textColor }}>KC</h1>
+            <img src={logo} alt="hotelhive" className="logo" style={{filter : inverse}}/>
           </Link>
         </div>
         <ul className="navmenu">

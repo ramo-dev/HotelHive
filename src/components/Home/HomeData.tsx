@@ -1,21 +1,45 @@
 import Hero from "../Hero/HeroData";
 import Navbar from "../navbar/Navigation";
-import { destCards } from "./desCards";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import getQuery from "../getQuery";
 import "./homeStyles.css";
-import RandomLocation from "./Locations";
-// import { DownOutlined } from "@ant-design/icons";
+import {RandomLocation} from "./Locations";
 import { Card, Layout, Typography, Flex, Rate, Space, Button } from "antd";
-// import type { MenuProps } from "antd";
 import { Content } from "antd/es/layout/layout";
 import SiderContent from "../Sider/SiderContent";
-import Search from "antd/es/transfer/search";
+import { SearchOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
-const hotels = await destCards;
-// https://hotelhive-backend.onrender.com/api/search/embu
+
+
 
 const HomeData = () => {
+  const [query, setQuery] = useState('');
+  const [location, setLocation] = useState([]);
+
+  async function getLocations(){
+    const resp = await getQuery(query)
+    const data = await resp
+    console.log(data)
+    setLocation(data)
+      
+  }
+
+  function handleSubmit(e:any){
+    e.preventDefault();
+    getLocations();
+  }
+
+useEffect(() => {
+  async function getHotelsOnLoad(){
+    const getRandomLocation = RandomLocation();
+    const arrayOfFetchedLocations = await getQuery(getRandomLocation);
+    setLocation(arrayOfFetchedLocations);
+  }
+  getHotelsOnLoad()
+},[])
+
+
   return (
     <>
       <Navbar />
@@ -44,53 +68,87 @@ const HomeData = () => {
             gap="large"
             className="top"
           >
-            <Typography.Title level={2} type="secondary">
-              25 hotels Found
+            <Typography.Title level={2}>
+              {location && <>{location.length} hotels Found</>}
             </Typography.Title>
-            <Flex align="center" gap="3rem">
-              <Search placeholder="input search text" enterButton />
-
-              <Flex align="center" gap="10px"></Flex>
+            <Flex align="center" gap="large">
+              <form className="destinationSearchMain" onSubmit={handleSubmit}>
+                <input
+                  type="search"
+                  placeholder="Enter location or hotel..."
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                <button>
+                  <SearchOutlined style={{ fontSize: "1.2rem" }} />
+                </button>
+              </form>
             </Flex>
           </Flex>
-          <Flex wrap="wrap" gap="large" style={{ padding: "2rem 0 0 2rem" }}>
-            {hotels.map((hotel, index) => (
-              <Card key={index} hoverable style={{ width: "600px" }}>
-                <Flex wrap="wrap" gap="middle">
-                  <img
-                    src={hotel.thumbnails[1]}
-                    alt={hotel.title}
-                    style={{ width: "280px" }}
-                  />
-                  <Flex
-                    vertical
-                    style={{ paddingLeft: "1rem" }}
-                    gap="middle"
-                    align="start"
-                    style={{ maxWidth: "300px" }}
+          <Flex wrap="wrap" gap="middle" style={{ padding: "1rem 0 0 1rem" }}>
+            {location ? (
+              <>
+                {location.map((hotel, index) => (
+                  <Card
+                    key={index}
+                    hoverable
+                    style={{ width: "620px", padding: "2rem" }}
+                    className="hotelCard"
                   >
-                    <Typography.Title level={4}>{hotel.title}</Typography.Title>
-                    <Typography.Text strong>{hotel.price}</Typography.Text>
-                    <Flex>
-                      <Rate allowHalf disabled defaultValue={hotel.rating} />
-                      <Typography.Text>({hotel.rating})</Typography.Text>
+                    <Flex wrap="wrap" gap="middle">
+                      <img
+                        src={hotel.thumbnails[0]}
+                        alt={hotel.title}
+                        style={{ width: "300px" }}
+                      />
+                      <Flex
+                        vertical
+                        style={{ maxWidth: "240px" }}
+                        gap="small"
+                        align="start"
+                      >
+                        <Typography.Title level={4}>
+                          {hotel.title}
+                        </Typography.Title>
+                        <Typography.Title level={5}>
+                          {hotel.location}
+                        </Typography.Title>
+                        <Typography.Text strong>{hotel.price}</Typography.Text>
+                        <Flex>
+                          <Rate
+                            allowHalf
+                            disabled
+                            defaultValue={hotel.rating}
+                          />
+                          <Typography.Text>({hotel.rating})</Typography.Text>
+                        </Flex>
+                        <Typography.Text>
+                          Reviews: ({hotel.reviews})
+                        </Typography.Text>
+                        <Space />
+                        <Flex gap="small">
+                          <Button>
+                            <Link to={hotel.link}>Hotel Details</Link>
+                          </Button>
+                          <Button
+                            style={{
+                              background: "var(--primary)",
+                              color: "var(--textWhite)",
+                            }}
+                          >
+                            <Link to={hotel.link}>Add To Favourites</Link>
+                          </Button>
+                        </Flex>
+                      </Flex>
                     </Flex>
-                    <Typography.Text>
-                      Reviews: ({hotel.reviews})
-                    </Typography.Text>
-                    <Space />
-                    <Flex gap="large">
-                      <Button>
-                        <Link to={hotel.link}>View Hotel</Link>
-                      </Button>
-                      <Button className="button">
-                        <Link to={hotel.link}>Hotel Details</Link>
-                      </Button>
-                    </Flex>
-                  </Flex>
-                </Flex>
-              </Card>
-            ))}
+                  </Card>
+                ))}
+              </>
+            ) : (
+              <>
+                <Typography.Title level={2}>No Hotels Found</Typography.Title>
+              </>
+            )}
+            )
           </Flex>
         </Content>
       </Layout>
