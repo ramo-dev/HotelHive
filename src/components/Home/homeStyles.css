@@ -9,6 +9,7 @@ section {
   bottom: 0;
   top: 10%;
   margin-left: 0rem;
+
 }
 .mainSection {
   width: 100% !important;
@@ -62,6 +63,8 @@ section {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
 }
-.hotelCard{
+.hotelCard {
   padding: 0px !important;
+}
+.Ratings {
 }
