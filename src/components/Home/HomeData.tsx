@@ -143,7 +143,10 @@ const HomeData = () => {
                   .filter((hotel) => hotel.price <= maxPrice) // Filter by maximum price
                   .filter((hotel) => hotel.rating >= minRating) // Filter by minimum rating
                   .sort((a, b) => {
-                    if (sortBy === "Price") {
+                    if (sortBy === "A-Z") {
+                      return a.title.localeCompare(b.title); // Sort alphabetically
+                    }
+                    else if (sortBy === "Price") {
                       return a.price - b.price; // Sort by price
                     } else if (sortBy === "Rating") {
                       return b.rating - a.rating; // Sort by rating
