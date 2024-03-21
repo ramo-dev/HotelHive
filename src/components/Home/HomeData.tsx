@@ -1,14 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  Typography,
-  Flex,
-  Rate,
-  Space,
-  Button,
-  Skeleton,
-  Layout,
-} from "antd";
+import { Card, Typography, Flex, Rate, Space, Button, Skeleton, Layout } from "antd";
 import { Link } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import Navbar from "../navbar/Navigation";
@@ -16,7 +7,6 @@ import Hero from "../Hero/HeroData";
 import getQuery from "../getQuery";
 import { RandomLocation } from "./Locations";
 import SiderContent from "../Sider/SiderContent";
-// import { destCards } from "./desCards";
 import "./homeStyles.css";
 
 const { Content, Sider } = Layout;
@@ -26,7 +16,9 @@ const HomeData = () => {
   const [location, setLocation] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [favs, setFavs] = useState([]);
+  const [sortBy, setSortBy] = useState("Popularity"); // State to hold sorting value
+  const [maxPrice, setMaxPrice] = useState(0); // State to hold maximum price
+  const [minRating, setMinRating] = useState(0); // State to hold minimum rating
 
   async function getLocations() {
     setSearchLoading(true);
@@ -35,11 +27,11 @@ const HomeData = () => {
     setLocation(data);
     setSearchLoading(false);
   }
+
   async function getHotelsOnLoad() {
     const getRandomLocation = RandomLocation();
     const arrayOfFetchedLocations = await getQuery(getRandomLocation);
     setLocation(arrayOfFetchedLocations);
-
     setLoading(false);
   }
 
@@ -51,7 +43,7 @@ const HomeData = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  function handleSubmit(e: any) {
+  function handleSubmit(e) {
     e.preventDefault();
     if (query === "") {
       getHotelsOnLoad();
@@ -60,10 +52,20 @@ const HomeData = () => {
     }
   }
 
-  // function addToFavs(hotelName: any) {
-  //   setFavs(hotelName);
-  //   console.log(favs);
-  // }
+  // Function to handle sorting change
+  const handleSortChange = (value) => {
+    setSortBy(value);
+  };
+
+  // Function to handle maximum price change
+  const handleMaxPriceChange = (value) => {
+    setMaxPrice(value);
+  };
+
+  // Function to handle minimum rating change
+  const handleRatingChange = (value) => {
+    setMinRating(value);
+  };
 
   return (
     <>
@@ -82,7 +84,11 @@ const HomeData = () => {
           style={{ borderTopLeftRadius: "30px" }}
           width={210}
         >
-          <SiderContent />
+          <SiderContent
+            onSortChange={handleSortChange}
+            onMaxPriceChange={handleMaxPriceChange}
+            onRatingChange={handleRatingChange}
+          />
         </Sider>
         <Content>
           <Flex
@@ -96,7 +102,15 @@ const HomeData = () => {
             <Typography.Title level={2}>
               {location.length > 0 ? (
                 <>
-                 {query ?  <>{location.length} hotels Found in {query}</> : <>{location.length} hotels Found in {RandomLocation()}</>}
+                  {query ? (
+                    <>
+                      {location.length} hotels Found in {query}
+                    </>
+                  ) : (
+                    <>
+                      {location.length} hotels Found in {RandomLocation()}
+                    </>
+                  )}
                 </>
               ) : (
                 <>Welcome to HotelHive</>
@@ -125,96 +139,109 @@ const HomeData = () => {
               </>
             ) : location && location.length > 0 ? (
               <>
-                {location.map((hotel, index) => (
-                  <Card
-                    key={index}
-                    hoverable
-                    style={{ width: "620px", padding: "2rem" }}
-                    className="hotelCard"
-                  >
-                    <Flex wrap="wrap" gap="middle">
-                      <Skeleton loading={!hotel.thumbnails} active>
-                        <img
-                          src={hotel.thumbnails[0]}
-                          alt={
-                            hotel.thumbnails
-                              ? hotel.title
-                              : `photo for ${hotel.title} not found`
-                          }
-                          style={{ width: "300px" }}
-                        />
-                      </Skeleton>
-                      <Flex
-                        vertical
-                        style={{ maxWidth: "240px" }}
-                        gap="small"
-                        align="start"
-                      >
-                        <Card.Meta
-                          title={
-                            <Typography.Title
-                              level={4}
-                              style={{
-                                maxWidth: "200px",
-                                whiteSpace: "wrap",
-                              }}
-                            >
-                              {hotel.title}
-                            </Typography.Title>
-                          }
-                          description={
-                            <>
+                {location
+                  .filter((hotel) => hotel.price <= maxPrice) // Filter by maximum price
+                  .filter((hotel) => hotel.rating >= minRating) // Filter by minimum rating
+                  .sort((a, b) => {
+                    if (sortBy === "Price") {
+                      return a.price - b.price; // Sort by price
+                    } else if (sortBy === "Rating") {
+                      return b.rating - a.rating; // Sort by rating
+                    } else {
+                      // Default to sort by Popularity
+                      return b.reviews - a.reviews; // Sort by popularity (number of reviews)
+                    }
+                  })
+                  .map((hotel, index) => (
+                    <Card
+                      key={index}
+                      hoverable
+                      style={{ width: "620px", padding: "2rem" }}
+                      className="hotelCard"
+                    >
+                      <Flex wrap="wrap" gap="middle">
+                        <Skeleton loading={!hotel.thumbnails} active>
+                          <img
+                            src={hotel.thumbnails[0]}
+                            alt={
+                              hotel.thumbnails
+                                ? hotel.title
+                                : `photo for ${hotel.title} not found`
+                            }
+                            style={{ width: "300px" }}
+                          />
+                        </Skeleton>
+                        <Flex
+                          vertical
+                          style={{ maxWidth: "240px" }}
+                          gap="small"
+                          align="start"
+                        >
+                          <Card.Meta
+                            title={
                               <Typography.Title
-                                level={5}
-                                style={{ marginTop: "-1rem" }}
+                                level={4}
+                                style={{
+                                  maxWidth: "200px",
+                                  whiteSpace: "wrap",
+                                }}
                               >
-                                <span style={{ fontWeight: "500" }}>
-                                  {" "}
-                                  Location :
-                                </span>{" "}
-                                {hotel.location}
+                                {hotel.title}
                               </Typography.Title>
-                              <Typography.Text strong>
-                                {hotel.price}
-                              </Typography.Text>
-                              <Flex>
-                                <Rate
-                                  allowHalf
-                                  disabled
-                                  defaultValue={
-                                    hotel.rating > 0 ? hotel.rating : 0
-                                  }
-                                />
-                                <Typography.Text>
-                                  ({hotel.rating})
-                                </Typography.Text>
-                              </Flex>
-                              <Typography.Text>
-                                Reviews: (
-                                {hotel.reviews > 0 ? hotel.reviews : 0})
-                              </Typography.Text>
-                              <Space />
-                              <Flex gap="small">
-                                <Button>
-                                  <Link to={hotel.link}>Hotel Details</Link>
-                                </Button>
-                                <Button
-                                  style={{
-                                    background: "var(--primary)",
-                                    color: "var(--textWhite)",
-                                  }}
-                                  onClick={() => setFavs(hotel.title)}
+                            }
+                            description={
+                              <>
+                                <Typography.Title
+                                  level={5}
+                                  style={{ marginTop: "-1rem" }}
                                 >
-                                  Add To Favourites
-                                </Button>
-                              </Flex>
-                            </>
-                          }
-                        />
+                                  <span style={{ fontWeight: "500" }}>
+                                    {" "}
+                                    Location :
+                                  </span>{" "}
+                                  {hotel.location}
+                                </Typography.Title>
+                                <Typography.Text strong>
+                                  {hotel.price}
+                                </Typography.Text>
+                                <Flex>
+                                  <Rate
+                                    allowHalf
+                                    disabled
+                                    defaultValue={
+                                      hotel.rating > 0 ? hotel.rating : 0
+                                    }
+                                  />
+                                  <Typography.Text>
+                                    ({hotel.rating})
+                                  </Typography.Text>
+                                </Flex>
+                                <Typography.Text>
+                                  Reviews: (
+                                  {hotel.reviews > 0 ? hotel.reviews : 0})
+                                </Typography.Text>
+                                <Space />
+                                <Flex gap="small">
+                                  <Button>
+                                    <Link to={hotel.link}>Hotel Details</Link>
+                                  </Button>
+                                  <Button
+                                    style={{
+                                      background: "var(--primary)",
+                                      color: "var(--textWhite)",
+                                    }}
+                                    onClick={() => setFavs(hotel.title)}
+                                  >
+                                    Add To Favourites
+                                  </Button>
+                                </Flex>
+                              </>
+                            }
+                          />
+                        </Flex>
                       </Flex>
-                    </Flex>
-                  </Card>
-                ))}
+                    </Card>
+                  ))}
               </>
             ) : (
               <Typography.Title level={2}>No Hotels Found</Typography.Title>
