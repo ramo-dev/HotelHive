@@ -16,6 +16,7 @@ import Hero from "../Hero/HeroData";
 import getQuery from "../getQuery";
 import { RandomLocation } from "./Locations";
 import SiderContent from "../Sider/SiderContent";
+// import { destCards } from "./desCards";
 import "./homeStyles.css";
 
 const { Content, Sider } = Layout;
@@ -25,6 +26,7 @@ const HomeData = () => {
   const [location, setLocation] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [favs, setFavs] = useState([]);
 
   async function getLocations() {
     setSearchLoading(true);
@@ -37,6 +39,7 @@ const HomeData = () => {
     const getRandomLocation = RandomLocation();
     const arrayOfFetchedLocations = await getQuery(getRandomLocation);
     setLocation(arrayOfFetchedLocations);
+
     setLoading(false);
   }
 
@@ -48,7 +51,7 @@ const HomeData = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  function handleSubmit(e) {
+  function handleSubmit(e: any) {
     e.preventDefault();
     if (query === "") {
       getHotelsOnLoad();
@@ -56,6 +59,11 @@ const HomeData = () => {
       getLocations();
     }
   }
+
+  // function addToFavs(hotelName: any) {
+  //   setFavs(hotelName);
+  //   console.log(favs);
+  // }
 
   return (
     <>
@@ -72,21 +80,24 @@ const HomeData = () => {
           collapsible
           collapsed={false}
           style={{ borderTopLeftRadius: "30px" }}
-          width={200}
+          width={210}
         >
           <SiderContent />
         </Sider>
         <Content>
           <Flex
             align="center"
-            justify="space-around"
+            justify="space-between"
             gap="small"
             className="top"
             wrap="wrap"
+            style={{ padding: "0 1.5rem" }}
           >
             <Typography.Title level={2}>
               {location.length > 0 ? (
-                <>{location.length} hotels Found</>
+                <>
+                 {query ?  <>{location.length} hotels Found in {query}</> : <>{location.length} hotels Found in {RandomLocation()}</>}
+                </>
               ) : (
                 <>Welcome to HotelHive</>
               )}
@@ -108,9 +119,9 @@ const HomeData = () => {
             {loading || searchLoading ? (
               // Display Skeleton while loading
               <>
-                <Skeleton active />
-                <Skeleton active />
-                <Skeleton active />
+                <Skeleton active style={{ maxWidth: "98%" }} />
+                <Skeleton active style={{ maxWidth: "98%" }} />
+                <Skeleton active style={{ maxWidth: "98%" }} />
               </>
             ) : location && location.length > 0 ? (
               <>
@@ -157,7 +168,11 @@ const HomeData = () => {
                                 level={5}
                                 style={{ marginTop: "-1rem" }}
                               >
-                                <span style={{fontWeight : '500'}}> Location :</span> {hotel.location}
+                                <span style={{ fontWeight: "500" }}>
+                                  {" "}
+                                  Location :
+                                </span>{" "}
+                                {hotel.location}
                               </Typography.Title>
                               <Typography.Text strong>
                                 {hotel.price}
@@ -188,8 +203,9 @@ const HomeData = () => {
                                     background: "var(--primary)",
                                     color: "var(--textWhite)",
                                   }}
+                                  onClick={() => setFavs(hotel.title)}
                                 >
-                                  <Link to={hotel.link}>Add To Favourites</Link>
+                                  Add To Favourites
                                 </Button>
                               </Flex>
                             </>
