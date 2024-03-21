@@ -5,8 +5,7 @@ HotelHive is a React application built with Ant Design components, designed to h
 Clone the repository:
 
 ```bash
-    git clone <repository-url>
-    Replace <repository-url> with the URL of your repository.
+    git clone https://github.com/ramo-dev/HotelHive.git
 ```
 2. Install dependencies:
 
